@@ -4,13 +4,40 @@
 
 	use App\Database\SQLConnection;
 	use App\Models\Pessoa;
-	use PDO;
+use Exception;
+use PDO;
 
     class PessoaRepository {
         
         public function save(Pessoa $pessoa) {
 			
-            // data
+			##########################################
+			# check if contains
+			#########################################
+			// build sql
+			$entity = Pessoa::getEntity();
+			$sql = "SELECT id FROM {$entity} WHERE nome = :nome OR apelido = :apelido LIMIT 1";
+			
+			// obtem a conexao
+			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
+
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([
+				':nome' => $pessoa->getNome(),
+				':apelido' => $pessoa->getApelido()
+			]);
+			$data = $stmt->fetch(PDO::FETCH_ASSOC);
+			$stmt->closeCursor();
+
+			$contains = ($data !== false);
+
+			if($contains) {
+				/* close connection */
+				$conn = null;
+				return null;
+			}
+
+			// data
 			$data = $pessoa->toArray();
 
 			// id is autoincrement
@@ -30,16 +57,16 @@
 			$placeholderString = implode(', ', $placeholders);
 
 			// build sql
-            $entity = Pessoa::getEntity();
+			$entity = Pessoa::getEntity();
 			$sql = "INSERT INTO {$entity} ( {$colString} ) VALUES ( {$placeholderString} )";
 
-			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
 			$stmt = $conn->prepare($sql);
 			$ret = $stmt->execute($values);
-			/* close connection */
 			$stmt->closeCursor();
-			$conn = null;
 
+			/* close connection */
+			$conn = null;
+			
 			return $pessoa;
 			
 			// // obtem a transacao ativa

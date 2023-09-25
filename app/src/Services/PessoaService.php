@@ -17,12 +17,12 @@ use Ramsey\Uuid\Uuid;
 
             $pessoa = Pessoa::fromArray($data);
             $pessoa->setUuid($uuid->toString());
-
-            // if($repository->contains($pessoa)) {
-            //     throw new Exception("contains");
-            // }
             
             $pessoa = $repository->save($pessoa);
+
+            if(!$pessoa) {
+                throw new Exception("contains");
+            }
             
             // SQLTransaction::open(CONFIG_DIR . '/db.ini');    
             // $pessoa = $repository->save($pessoa);
