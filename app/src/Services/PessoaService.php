@@ -5,7 +5,8 @@
     use App\Database\SQLTransaction;
     use App\Models\Pessoa;
     use App\Repositories\PessoaRepository;
-    use Ramsey\Uuid\Uuid;
+use Exception;
+use Ramsey\Uuid\Uuid;
 
     class PessoaService {
 
@@ -17,6 +18,10 @@
             $pessoa = Pessoa::fromArray($data);
             $pessoa->setUuid($uuid->toString());
 
+            // if($repository->contains($pessoa)) {
+            //     throw new Exception("contains");
+            // }
+            
             $pessoa = $repository->save($pessoa);
             
             // SQLTransaction::open(CONFIG_DIR . '/db.ini');    

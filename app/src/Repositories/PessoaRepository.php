@@ -9,7 +9,7 @@
     class PessoaRepository {
         
         public function save(Pessoa $pessoa) {
-            
+			
             // data
 			$data = $pessoa->toArray();
 
@@ -82,10 +82,33 @@
 
 		}
 
+		public function contains(Pessoa $pessoa) {
+			// build sql
+			$entity = Pessoa::getEntity();
+			$sql = "SELECT id FROM {$entity} WHERE nome = :nome OR apelido = :apelido LIMIT 1";
+			
+			// obtem a conexao
+			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
+
+			$stmt = $conn->prepare($sql);
+			$stmt->execute([
+				':nome' => $pessoa->getNome(),
+				':apelido' => $pessoa->getApelido()
+			]);
+			$data = $stmt->fetch(PDO::FETCH_ASSOC);
+			
+			/* close connection */
+			$stmt->closeCursor();
+			$conn = null;
+
+			return ($data !== false);		
+
+		}
+
         public function findByUuid($uuid) {
             // build sql
             $entity = Pessoa::getEntity();
-			$sql = "SELECT * FROM {$entity} WHERE uuid = :uuid";
+			$sql = "SELECT * FROM {$entity} WHERE uuid = :uuid LIMIT 1";
 
 			// obtem a conexao
 			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');

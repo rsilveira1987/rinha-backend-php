@@ -1,9 +1,5 @@
 FROM php:8.2
 
-WORKDIR /var/www/html
-
-COPY ./app /var/www/html
-
 # RUN apt-get update && apt-get install -y \
 #     libapache2-mod-fcgid
 
@@ -18,8 +14,6 @@ RUN apt-get update && apt-get install -y \
         vim \
         git \
     && rm -rf /var/lib/apt/lists/*
-
-
 
 # RUN pecl install redis && docker-php-ext-enable redis
 # RUN docker-php-ext-configure gd \
@@ -81,6 +75,9 @@ RUN rm -rf /var/cache/apk/*
 
 # # Change current user to www
 # USER www-data
+
+WORKDIR /var/www/html
+COPY ./app /var/www/html
 
 # CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
 CMD ["php", "/var/www/html/public/index.php", "start"]
