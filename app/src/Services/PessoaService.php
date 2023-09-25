@@ -5,8 +5,8 @@
     use App\Database\SQLTransaction;
     use App\Models\Pessoa;
     use App\Repositories\PessoaRepository;
-use Exception;
-use Ramsey\Uuid\Uuid;
+    use Ramsey\Uuid\Uuid;
+    use Exception;
 
     class PessoaService {
 

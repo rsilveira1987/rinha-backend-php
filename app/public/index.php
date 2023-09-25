@@ -4,7 +4,9 @@
 require '/var/www/html/bootstrap.php';
 
 use App\Exceptions\InvalidSyntaxException;
+use App\Models\Pessoa;
 use App\Services\PessoaService;
+use Ramsey\Uuid\Uuid;
 use Swoole\Http\Server;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -16,6 +18,14 @@ $hostname = getenv('HOSTNAME');
 $port = getenv('PORT');
 
 $server = new Server($host, $port);
+
+// $server->set([
+//     'worker_num' => 2,
+//     'open_tcp_keepalive' => 1,  // open tcp_keepalive
+//     'tcp_keepidle' => 4,        // 4s Test without data transmission
+//     'tcp_keepinterval' => 1,    // 1s Detect once
+//     'tcp_keepcount' => 5,       // Number of detections, no packet returned after more than 5 detections close This connection
+// ]);
 
 // a swoole server is evented just like express
 $server->on('start', function (Server $server) use ($hostname, $port) {
@@ -78,10 +88,33 @@ $server->on('request', function (Request $req, Response $res) {
             // we have a problem with the body
             return $response->withJson(['400 Bad Request'], 400);
         }
+
+        //
+        // Cache client
+        //
+        $cache = new Predis\Client([
+            'scheme' => 'tcp',
+            'host'   => 'cache',
+            'port'   => 6379,
+        ]);
+
+        //
+        // Check cache
+        //
+        $nome = $cache->get($data['nome']);
+        $apelido = $cache->get($data['apelido']);        
+        if ($nome !== null || $apelido !== null ) {
+            return $response->withJson(['422 Unprocessable Entity/Content'], 422);
+        }
         
         try {
+            
             $pessoa = PessoaService::save($data);
             $uuid = $pessoa->getUuid();
+
+            $cache->set($pessoa->getNome(), true);      // Add to cache
+            $cache->set($pessoa->getApelido(), true);   // Add to cache
+
         } catch (InvalidSyntaxException $e) {
             return $response->withJson(['400 Bad Request'], 400);
         } catch (Exception $e) {
@@ -131,8 +164,6 @@ $server->on('request', function (Request $req, Response $res) {
     });
 
     
-    
-
     // // example of a JSON response
     // $app->get('/type/json', function ($request, $response, $args) {
     //     return $response->withJson([

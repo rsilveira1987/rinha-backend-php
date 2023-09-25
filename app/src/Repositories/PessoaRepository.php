@@ -4,8 +4,7 @@
 
 	use App\Database\SQLConnection;
 	use App\Models\Pessoa;
-use Exception;
-use PDO;
+	use PDO;
 
     class PessoaRepository {
         
@@ -14,29 +13,29 @@ use PDO;
 			##########################################
 			# check if contains
 			#########################################
-			// build sql
-			$entity = Pessoa::getEntity();
-			$sql = "SELECT id FROM {$entity} WHERE nome = :nome OR apelido = :apelido LIMIT 1";
+			// // build sql
+			// $entity = Pessoa::getEntity();
+			// $sql = "SELECT id FROM {$entity} WHERE nome = :nome OR apelido = :apelido LIMIT 1";
 			
-			// obtem a conexao
-			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
+			// // obtem a conexao
+			// $conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
 
-			$stmt = $conn->prepare($sql);
-			$stmt->execute([
-				':nome' => $pessoa->getNome(),
-				':apelido' => $pessoa->getApelido()
-			]);
-			$data = $stmt->fetch(PDO::FETCH_ASSOC);
-			$stmt->closeCursor();
+			// $stmt = $conn->prepare($sql);
+			// $stmt->execute([
+			// 	':nome' => $pessoa->getNome(),
+			// 	':apelido' => $pessoa->getApelido()
+			// ]);
+			// $data = $stmt->fetch(PDO::FETCH_ASSOC);
+			// $stmt->closeCursor();
 
-			$contains = ($data !== false);
+			// $contains = ($data !== false);
 
-			if($contains) {
-				/* close connection */
-				$conn = null;
-				return null;
-			}
-
+			// if($contains) {
+			// 	/* close connection */
+			// 	$conn = null;
+			// 	return null;
+			// }		
+			
 			// data
 			$data = $pessoa->toArray();
 
@@ -59,14 +58,16 @@ use PDO;
 			// build sql
 			$entity = Pessoa::getEntity();
 			$sql = "INSERT INTO {$entity} ( {$colString} ) VALUES ( {$placeholderString} )";
-
+			
+			// obtem a conexao
+			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
 			$stmt = $conn->prepare($sql);
 			$ret = $stmt->execute($values);
 			$stmt->closeCursor();
 
 			/* close connection */
 			$conn = null;
-			
+									
 			return $pessoa;
 			
 			// // obtem a transacao ativa

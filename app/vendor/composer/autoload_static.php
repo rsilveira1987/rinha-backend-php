@@ -25,6 +25,7 @@ class ComposerStaticInit16c232e85a25889fa2902867831782bb
         array (
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
+            'Predis\\' => 7,
         ),
         'F' => 
         array (
@@ -60,6 +61,10 @@ class ComposerStaticInit16c232e85a25889fa2902867831782bb
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'Predis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/predis/predis/src',
         ),
         'FastRoute\\' => 
         array (

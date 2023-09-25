@@ -76,6 +76,10 @@ RUN rm -rf /var/cache/apk/*
 # # Change current user to www
 # USER www-data
 
+# Use the default production configuration
+# RUN mv $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
+COPY ./docker/apache/session.ini /usr/local/etc/php/conf.d/
+
 WORKDIR /var/www/html
 COPY ./app /var/www/html
 
