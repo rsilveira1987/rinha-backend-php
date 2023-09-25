@@ -1,0 +1,167 @@
+version: '3'
+
+services:
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - 9999:9999
+    volumes:
+      # - ./default.conf:/etc/nginx/conf.d/default.conf
+      # - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.25'
+    #       memory: '0.5GB'
+    depends_on:
+      - swoole-php1
+      - swoole-php2
+
+  swoole-php1:
+    # image: phpswoole/swoole:latest
+    # image: phpswoole/swoole:4.5.2-php7.4
+    hostname: swoole-php1
+    image: rinha-backend-php:latest
+    environment:
+      - DOCKER=1
+      - HOST=0.0.0.0
+      - HOSTNAME=localhost
+      - PORT=8080
+      - SWOOLE_HTTP_HOST=0.0.0.0 # required for Laravel swoole
+      - SWOOLE_HTTP_WEBSOCKET=true # required for Laravel swoole websocket
+    # command: php /workdir/serve-file.php start
+    # command: php /workdir/client.php start # broken without additional async extension
+    # command: php /workdir/channel.php start # broken without additional async extension
+    # command: php /workdir/process.php start
+    # command: php /workdir/router.php start
+    # command: php /workdir/websocket.php start
+    # command: php /var/www/html/public/index.php start
+    # command: php /workdir/event-source.php start
+    # command: php /workdir/users/artisan serve --host=0.0.0.0 --port=1215 # Laravel no swoole
+    # command: php /workdir/users/artisan swoole:http start # Laravel with swoole
+    expose:
+      - 8080
+    volumes:
+      - ./app:/var/www/html
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.5'
+    #       memory: '0.5GB'
+    depends_on:
+      - pgsql
+  
+  swoole-php2:
+    # image: phpswoole/swoole:latest
+    # image: phpswoole/swoole:4.5.2-php7.4
+    hostname: swoole-php2
+    image: rinha-backend-php:latest
+    environment:
+      - DOCKER=1
+      - HOST=0.0.0.0
+      - HOSTNAME=localhost
+      - PORT=8080
+      - SWOOLE_HTTP_HOST=0.0.0.0 # required for Laravel swoole
+      - SWOOLE_HTTP_WEBSOCKET=true # required for Laravel swoole websocket
+    # command: php /workdir/serve-file.php start
+    # command: php /workdir/client.php start # broken without additional async extension
+    # command: php /workdir/channel.php start # broken without additional async extension
+    # command: php /workdir/process.php start
+    # command: php /workdir/router.php start
+    # command: php /workdir/websocket.php start
+    # command: php /var/www/html/public/index.php start
+    # command: php /workdir/event-source.php start
+    # command: php /workdir/users/artisan serve --host=0.0.0.0 --port=1215 # Laravel no swoole
+    # command: php /workdir/users/artisan swoole:http start # Laravel with swoole
+    expose:
+      - 8080
+    volumes:
+      - ./app:/var/www/html
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.5'
+    #       memory: '0.5GB'
+    depends_on:
+      - pgsql
+
+  # api1:
+  #   # container_name: app # overwriten by replica mode
+  #   hostname: api1
+  #   image: rinha-backend-php:latest
+  #   # image: wyveo/nginx-php-fpm:php81
+  #   restart: always
+  #   expose:
+  #     - 8080
+  #     - 80
+  #   volumes:
+  #       - ./app:/var/www/html/
+  #       # - ./app:/usr/share/nginx/html/
+  #       # - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.25'
+  #         memory: '0.5GB'
+  #   depends_on:
+  #     - pgsql
+  
+  # api2:
+  #   # container_name: app # overwriten by replica mode
+  #   hostname: api2
+  #   image: rinha-backend-php:latest
+  #   # image: wyveo/nginx-php-fpm:php81
+  #   restart: always
+  #   expose:
+  #     - 8080
+  #     - 80
+  #   volumes:
+  #     - ./app:/var/www/html/
+  #       # - ./app:/usr/share/nginx/html/
+  #       # - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.25'
+  #         memory: '0.5GB'
+  #   depends_on:
+  #     - pgsql
+  
+  
+  # nodejs:
+  #   container_name: node_container
+  #   image: node-app:latest
+  #   restart: always
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - ./teste/gatling:/gatling/
+  
+  pgsql:
+    container_name: pgsql_container
+    hostname: pgsql
+    image: postgres:14.8
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=backend
+    command: postgres -c config_file=/docker-entrypoint-initdb.d/postgresql.conf
+    ports:
+      - 5432
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./docker/pgsql/postgresql.conf:/docker-entrypoint-initdb.d/postgresql.conf
+      - ./docker/pgsql/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: '1GB'
+
+volumes:
+  postgresql_data:
+    driver: local
