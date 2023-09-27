@@ -1,6 +1,62 @@
 {
     "packages": [
         {
+            "name": "brick/db",
+            "version": "0.2.0",
+            "version_normalized": "0.2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/brick/db.git",
+                "reference": "5f678cab5f76eaf1edda7319d3305d6233eaa98b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/brick/db/zipball/5f678cab5f76eaf1edda7319d3305d6233eaa98b",
+                "reference": "5f678cab5f76eaf1edda7319d3305d6233eaa98b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "^2.0",
+                "phpunit/phpunit": "^9.0",
+                "vimeo/psalm": "5.15.0"
+            },
+            "time": "2023-09-01T19:56:45+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Brick\\Db\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Database tools library",
+            "keywords": [
+                "BulkDeleter",
+                "BulkInserter",
+                "brick",
+                "db",
+                "pdo"
+            ],
+            "support": {
+                "issues": "https://github.com/brick/db/issues",
+                "source": "https://github.com/brick/db/tree/0.2.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/BenMorel",
+                    "type": "github"
+                }
+            ],
+            "install-path": "../brick/db"
+        },
+        {
             "name": "brick/math",
             "version": "0.11.0",
             "version_normalized": "0.11.0.0",

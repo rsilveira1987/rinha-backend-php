@@ -34,6 +34,7 @@ class ComposerStaticInit16c232e85a25889fa2902867831782bb
         'B' => 
         array (
             'Brick\\Math\\' => 11,
+            'Brick\\Db\\' => 9,
         ),
         'A' => 
         array (
@@ -73,6 +74,10 @@ class ComposerStaticInit16c232e85a25889fa2902867831782bb
         'Brick\\Math\\' => 
         array (
             0 => __DIR__ . '/..' . '/brick/math/src',
+        ),
+        'Brick\\Db\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/brick/db/src',
         ),
         'App\\' => 
         array (

@@ -14,5 +14,6 @@ return array(
     'Predis\\' => array($vendorDir . '/predis/predis/src'),
     'FastRoute\\' => array($vendorDir . '/nikic/fast-route/src'),
     'Brick\\Math\\' => array($vendorDir . '/brick/math/src'),
+    'Brick\\Db\\' => array($vendorDir . '/brick/db/src'),
     'App\\' => array($baseDir . '/src'),
 );
