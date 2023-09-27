@@ -89,21 +89,17 @@
             // build sql
             $entity = Pessoa::getEntity(); # . "_view";
 			//$sql = "SELECT * FROM {$entity} WHERE id = :id LIMIT 1";
-			$sql = "SELECT * FROM {$entity} WHERE id = {$id} LIMIT 1";
+			$sql = "SELECT * FROM {$entity} WHERE id = '{$id}' LIMIT 1";
+
 
 			// obtem a conexao
 			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
 			
-			// $stmt = $conn->prepare($sql);
-			// $ret = $stmt->execute([
-			// 	':id' => $id
-			// ]);
-			// $data = $stmt->fetch(PDO::FETCH_ASSOC);
-			$data = $conn->query($sql, PDO::FETCH_ASSOC);
-			$data['stack'] = explode(',',$data['stack']);
+			$stmt = $conn->query($sql, PDO::FETCH_ASSOC);
+			$data = $stmt->fetch(PDO::FETCH_ASSOC);
 			
-			/* close connection */
-			// $stmt->closeCursor();
+			$data['stack'] = ($data['stack'] == "") ? [] : explode(',',$data['stack']);
+			
 			$conn = null;
 
 			return Pessoa::fromArray($data);

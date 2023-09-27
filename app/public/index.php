@@ -150,29 +150,29 @@ $server->on('request', function (Request $req, Response $res) {
         // grab uuid
         $uuid = $args['uuid'];
         
-        // $pessoa = PessoaService::findById($uuid);
-        // if(!$pessoa) {
-        //     return $response->withJson("404 not found", 404);    
-        // }
-        // return $response->withJson($pessoa->toArray(), 200);
-
-        //
-        // Cache client
-        //
-        $cache = new Predis\Client([
-            'scheme' => 'tcp',
-            'host'   => 'cache',
-            'port'   => 6379,
-        ]);
-
-        $pessoaJson = $cache->get($uuid);
-
-        if($pessoaJson == null) {
-            return $response->withJson("404 not found", 404);
+        $pessoa = PessoaService::findById($uuid);
+        if(!$pessoa) {
+            return $response->withJson("404 not found", 404);    
         }
+        return $response->withJson($pessoa->toArray(), 200);
 
-        $pessoa = Pessoa::fromArray(json_decode($pessoaJson,1));
-        return $response->withJson($pessoa->toArray(), 200);        
+        // //
+        // // Cache client
+        // //
+        // $cache = new Predis\Client([
+        //     'scheme' => 'tcp',
+        //     'host'   => 'cache',
+        //     'port'   => 6379,
+        // ]);
+
+        // $pessoaJson = $cache->get($uuid);
+
+        // if($pessoaJson == null) {
+        //     return $response->withJson("404 not found", 404);
+        // }
+
+        // $pessoa = Pessoa::fromArray(json_decode($pessoaJson,1));
+        // return $response->withJson($pessoa->toArray(), 200);        
     });
 
     # GET /pessoas?t=<termo>
