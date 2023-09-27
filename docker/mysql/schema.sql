@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS backend;
+
+USE backend;
+
 CREATE TABLE tb_pessoas (
   id varchar(36),
   apelido varchar(32),

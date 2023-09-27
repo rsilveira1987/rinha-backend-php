@@ -104,44 +104,44 @@ services:
           cpus: '0.25'
           memory: '0.5GB'
   
+  # database:
+  #   container_name: mysql_container
+  #   image: mysql:8.1.0
+  #   command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  #   restart: always
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=root
+  #     - MYSQL_PASSWORD=root
+  #     - MYSQL_DATABASE=backend
+  #   volumes:
+  #     - data:/var/lib/mysql
+  #     - ./docker/mysql/my.cnf:/etc/my.cnf
+  #     - ./docker/mysql/schema.sql:/docker-entrypoint-initdb.d/1.sql
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.5'
+  #         memory: '1GB'
+    
   database:
     container_name: mysql_container
-    image: mysql:8.1.0
+    image: mariadb:11.1
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_PASSWORD=root
-      - MYSQL_DATABASE=backend
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: backend
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
     volumes:
       - data:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/etc/my.cnf
+      # - ./docker/mysql/my.cnf:/etc/my.cnf
       - ./docker/mysql/schema.sql:/docker-entrypoint-initdb.d/1.sql
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: '1GB'
-    
-  # database:
-  #   container_name: mysql_container
-  #   image: mariadb:11.1
-  #   command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-  #   restart: always
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: root
-  #     MYSQL_DATABASE: backend
-  #     MYSQL_USER: root
-  #     MYSQL_PASSWORD: root
-  #   volumes:
-  #     - data:/var/lib/mysql
-  #     # - ./docker/mysql/my.cnf:/etc/my.cnf
-  #     - ./docker/mysql:/docker-entrypoint-initdb.d
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '0.5'
-  #         memory: '1GB'
     
   
   # database:

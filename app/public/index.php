@@ -80,7 +80,6 @@ $server->on('request', function (Request $req, Response $res) {
     # POST /pessoas
     $app->post('/pessoas', function ($request, $response, $args) use($req){
         
-        // $body = $request->getParsedBody();
         $body = $req->post ?? $req->rawContent();
         $data = json_decode($body,1);
         
@@ -107,11 +106,18 @@ $server->on('request', function (Request $req, Response $res) {
         //     return $response->withJson(['422 Unprocessable Entity/Content'], 422);
         // }
 
-        $nome = $cache->get($data['nome']);
-        $apelido = $cache->get($data['apelido']);        
-        if ($nome !== null || $apelido !== null ) {
+        $blacklist = $cache->get('blacklist');
+        $blacklist = explode(',',$blacklist);
+
+        if(in_array($data['nome'], $blacklist) || in_array($data['apelido'], $blacklist)) {
             return $response->withJson(['422 Unprocessable Entity/Content'], 422);
         }
+
+        // $nome = $cache->get($data['nome']);
+        // $apelido = $cache->get($data['apelido']);        
+        // if ($nome !== null || $apelido !== null ) {
+        //     return $response->withJson(['422 Unprocessable Entity/Content'], 422);
+        // }
         
         try {
             
@@ -128,12 +134,16 @@ $server->on('request', function (Request $req, Response $res) {
             // $nomes = json_encode($nomes);
             // $cache->set('nomes', $nomes);      
 
-            // Old cache...
-            $cache->set($pessoa->getNome(), true);   // Add to cache
-            $cache->set($pessoa->getApelido(), true);   // Add to cache
-            
-            $cache->set($id, $pessoa->toJson());
+            $blacklist[] = $pessoa->getNome();
+            $blacklist[] = $pessoa->getApelido();
+            $cache->set('blacklist', implode(',',$blacklist));
 
+            // Old cache...
+            //$cache->set($pessoa->getNome(), true);   // Add to cache
+            //$cache->set($pessoa->getApelido(), true);   // Add to cache
+            
+            // hashmap
+            $cache->set($id, $pessoa->toJson());
 
         } catch (InvalidSyntaxException $e) {
             return $response->withJson(['400 Bad Request'], 400);
