@@ -4,9 +4,7 @@
 require '/var/www/html/bootstrap.php';
 
 use App\Exceptions\InvalidSyntaxException;
-use App\Models\Pessoa;
 use App\Services\PessoaService;
-use Ramsey\Uuid\Uuid;
 use Swoole\Http\Server;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -18,14 +16,6 @@ $hostname = getenv('HOSTNAME');
 $port = getenv('PORT');
 
 $server = new Server($host, $port);
-
-// $server->set([
-//     'worker_num' => 2,
-//     'open_tcp_keepalive' => 1,  // open tcp_keepalive
-//     'tcp_keepidle' => 4,        // 4s Test without data transmission
-//     'tcp_keepinterval' => 1,    // 1s Detect once
-//     'tcp_keepcount' => 5,       // Number of detections, no packet returned after more than 5 detections close This connection
-// ]);
 
 // a swoole server is evented just like express
 $server->on('start', function (Server $server) use ($hostname, $port) {
@@ -88,62 +78,34 @@ $server->on('request', function (Request $req, Response $res) {
             return $response->withJson(['400 Bad Request'], 400);
         }
 
-        //
         // Cache client
-        //
         $cache = new Predis\Client([
             'scheme' => 'tcp',
             'host'   => 'cache',
             'port'   => 6379,
         ]);
 
-        //
         // Check cache
-        //
-        // $nomes = $cache->get('nomes') ?? '[]';
-        // $nomes = json_decode($nomes);
-        // if( in_array($data['nome'],$nomes) || in_array($data['apelido'],$nomes) ) {
-        //     return $response->withJson(['422 Unprocessable Entity/Content'], 422);
-        // }
-
         $blacklist = $cache->get('blacklist');
         $blacklist = explode(',',$blacklist);
 
         if(in_array($data['nome'], $blacklist) || in_array($data['apelido'], $blacklist)) {
             return $response->withJson(['422 Unprocessable Entity/Content'], 422);
         }
-
-        // $nome = $cache->get($data['nome']);
-        // $apelido = $cache->get($data['apelido']);        
-        // if ($nome !== null || $apelido !== null ) {
-        //     return $response->withJson(['422 Unprocessable Entity/Content'], 422);
-        // }
         
         try {
             
             $pessoa = PessoaService::save($data);
             $id = $pessoa->getId();
 
-            #
             # Add to cache
-            #
-            // $nomes = $cache->get('nomes') ?? '[]';
-            // $nomes = json_decode($nomes);
-            // $nomes[] = $pessoa->getNome();
-            // $nomes[] = $pessoa->getApelido();
-            // $nomes = json_encode($nomes);
-            // $cache->set('nomes', $nomes);      
-
             $blacklist[] = $pessoa->getNome();
             $blacklist[] = $pessoa->getApelido();
             $cache->set('blacklist', implode(',',$blacklist));
 
-            // Old cache...
-            //$cache->set($pessoa->getNome(), true);   // Add to cache
-            //$cache->set($pessoa->getApelido(), true);   // Add to cache
-            
+            // Old cache...            
             // hashmap
-            $cache->set($id, $pessoa->toJson());
+            // $cache->set($id, $pessoa->toJson());
 
         } catch (InvalidSyntaxException $e) {
             return $response->withJson(['400 Bad Request'], 400);
@@ -210,15 +172,6 @@ $server->on('request', function (Request $req, Response $res) {
         return $response->withStatus(200)->getBody()->write($count);
     });
 
-    
-    // // example of a JSON response
-    // $app->get('/type/json', function ($request, $response, $args) {
-    //     return $response->withJson([
-    //         'status' => 'ok',
-    //         'message' => 'hey!'
-    //     ]);
-    // });
-
     //-----------------------------------------------------------------------
     // 4. Run app
     //-----------------------------------------------------------------------
@@ -239,7 +192,13 @@ $server->on('request', function (Request $req, Response $res) {
     // write the output
     $res->end($slim->getBody());
 
-    
+    // // example of a JSON response
+    // $app->get('/type/json', function ($request, $response, $args) {
+    //     return $response->withJson([
+    //         'status' => 'ok',
+    //         'message' => 'hey!'
+    //     ]);
+    // });
 
     // // normal text/html response
     // $app->get('/[{name}]', function ($request, $response, $args) {
@@ -249,8 +208,6 @@ $server->on('request', function (Request $req, Response $res) {
     //         ->getBody()
     //         ->write(sprintf('<p>Hello, %s</p>', $name));
     // });
-
-    
 
     // // figure out if we are running in HTTPS
     // $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443);
