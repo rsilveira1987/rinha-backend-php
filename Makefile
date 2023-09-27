@@ -13,16 +13,16 @@ start: ## Iniciar containers
 
 stop: ## Parar containers
 	docker-compose down || true
-	docker volume rm rinha-backend-php_postgresql_data || true
-
-clean: ## Limpar o banco de dados
-	docker volume rm rinha-backend-php_postgresql_data
+	docker volume rm rinha-backend-php_data || true
 
 clean-all: ## Remove todos os containers/volumes!
 	docker-compose down --rmi all --volumes --remove-orphans
 
 pgsql-sh: ## Postgres sh
 	docker exec -it pgsql_container psql -U postgres
+
+mysql-sh: ## Mysql sh
+	docker exec -it mysql_container /bin/bash
 
 build: ## Build rinha-backend-php image
 	docker rmi rinha-backend-php:latest || true

@@ -9,147 +9,101 @@
     class PessoaRepository {
         
         public function save(Pessoa $pessoa) {
-			
-			##########################################
-			# check if contains
-			#########################################
-			// // build sql
-			// $entity = Pessoa::getEntity();
-			// $sql = "SELECT id FROM {$entity} WHERE nome = :nome OR apelido = :apelido LIMIT 1";
-			
-			// // obtem a conexao
-			// $conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
-
-			// $stmt = $conn->prepare($sql);
-			// $stmt->execute([
-			// 	':nome' => $pessoa->getNome(),
-			// 	':apelido' => $pessoa->getApelido()
-			// ]);
-			// $data = $stmt->fetch(PDO::FETCH_ASSOC);
-			// $stmt->closeCursor();
-
-			// $contains = ($data !== false);
-
-			// if($contains) {
-			// 	/* close connection */
-			// 	$conn = null;
-			// 	return null;
-			// }		
-			
+						
 			// data
-			$data = $pessoa->toArray();
+			$dto = $pessoa->toArray();
 
 			// id is autoincrement
-			unset($data['id']);
+			// unset($data['id']);
 
 			// json data
-			$data['stack'] = json_encode($data['stack']);
-
+			$dto['stack'] = ($dto['stack'] != null) ? implode(',',$dto['stack']) : '';
+			
 			// cria uma instrucao SQL para INSERT
-			$colString = implode(', ', array_keys($data));
-			$placeholders = [];
+			$colString = implode(', ', array_keys($dto));
 			$values = [];
-			foreach ($data as $key => $value) {
-				$placeholders[] = ":{$key}";
-				$values[":{$key}"] = $value;
-			}
-			$placeholderString = implode(', ', $placeholders);
-
+			// $placeholders = [];
+			// foreach ($data as $key => $value) {						// old
+			// 	$placeholders[] = ":{$key}"; 							// old
+			// 	$values[":{$key}"] = $value;							// old
+			// }														// old
+			// $placeholderString = implode(', ', $placeholders);		// old
+				
+			foreach ($dto as $key => $value) {
+				$values[] = "'{$value}'";
+			}	
+			$colValues = implode(',',$values);
 			// build sql
 			$entity = Pessoa::getEntity();
-			$sql = "INSERT INTO {$entity} ( {$colString} ) VALUES ( {$placeholderString} )";
-			
+			// $sql = "INSERT INTO {$entity} ( {$colString} ) VALUES ( {$placeholderString} )";	// old
+			$sql = "INSERT INTO {$entity} ( {$colString} ) VALUES ( $colValues )";
+						
 			// obtem a conexao
 			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
-			$stmt = $conn->prepare($sql);
-			$ret = $stmt->execute($values);
-			$stmt->closeCursor();
+			// $stmt = $conn->prepare($sql);		// old
+			// $ret = $stmt->execute($values);		// old
+			// $stmt->closeCursor();				// old
+			$conn->exec($sql);
 
 			/* close connection */
 			$conn = null;
 									
-			return $pessoa;
-			
-			// // obtem a transacao ativa
-			// if ($conn = SQLTransaction::getInstance()) {
-			// 	$stmt = $conn->prepare($sql);
-			// 	$ret = $stmt->execute($values);
-			// 	// retorna o objeto
-            //     // $id = $conn->lastInsertId();
-			// 	// return $this->find($id);
-            //     return $pessoa;
-			// } else {
-			// 	throw new Exception('Nao existe transacao ativa');
-			// }
-        }
+			return $pessoa;	
+		}
 
 		public function searchByCriteria($criteria) {
 			// build sql
-            $entity = Pessoa::getEntity();
-			$sql = "SELECT * FROM {$entity} WHERE apelido LIKE :criteria OR (stack)::TEXT LIKE :criteria LIMIT 50";
+            $entity = Pessoa::getEntity(); # . "_view";
+			$sql = "SELECT * FROM {$entity} WHERE nome LIKE '%{$criteria}%' OR apelido LIKE '%{$criteria}%' OR stack LIKE '%{$criteria}%' LIMIT 50";
 
 			// obtem a transacao ativa
 			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
-			$stmt = $conn->prepare($sql);
-			$ret = $stmt->execute([
-				':criteria' => "%$criteria%"
-			]);
+			// $stmt = $conn->prepare($sql);
+			// $ret = $stmt->execute([
+			// 	':criteria' => "%$criteria%"
+			// ]);
+			// $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+			$stmt = $conn->query($sql, PDO::FETCH_ASSOC);
 			$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			
 			$pessoas = array_map(function($data) {
-				$data['stack'] = json_decode($data['stack']);
+				$data['stack'] = ($data['stack'] == "") ? [] : explode(',',$data['stack']);
 				$pessoa = Pessoa::fromArray($data);
-				return $pessoa->toJson();
+				return $pessoa->toArray();
 			},$rows);
 
 			/* close connection */
-			$stmt->closeCursor();
+			// $stmt->closeCursor();
 			$conn = null;
 			
 			return $pessoas;
 
 		}
 
-		public function contains(Pessoa $pessoa) {
-			// build sql
-			$entity = Pessoa::getEntity();
-			$sql = "SELECT id FROM {$entity} WHERE nome = :nome OR apelido = :apelido LIMIT 1";
-			
-			// obtem a conexao
-			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
-
-			$stmt = $conn->prepare($sql);
-			$stmt->execute([
-				':nome' => $pessoa->getNome(),
-				':apelido' => $pessoa->getApelido()
-			]);
-			$data = $stmt->fetch(PDO::FETCH_ASSOC);
-			
-			/* close connection */
-			$stmt->closeCursor();
-			$conn = null;
-
-			return ($data !== false);		
-
-		}
-
         public function findByUuid($uuid) {
+            return $this->findById($uuid);
+        }
+
+		public function findById($id) {
             // build sql
-            $entity = Pessoa::getEntity();
-			$sql = "SELECT * FROM {$entity} WHERE uuid = :uuid LIMIT 1";
+            $entity = Pessoa::getEntity(); # . "_view";
+			//$sql = "SELECT * FROM {$entity} WHERE id = :id LIMIT 1";
+			$sql = "SELECT * FROM {$entity} WHERE id = {$id} LIMIT 1";
 
 			// obtem a conexao
 			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
 			
-			$stmt = $conn->prepare($sql);
-			$ret = $stmt->execute([
-				':uuid' => $uuid
-			]);
-			$data = $stmt->fetch(PDO::FETCH_ASSOC);
-			$data['stack'] = json_decode($data['stack']);
+			// $stmt = $conn->prepare($sql);
+			// $ret = $stmt->execute([
+			// 	':id' => $id
+			// ]);
+			// $data = $stmt->fetch(PDO::FETCH_ASSOC);
+			$data = $conn->query($sql, PDO::FETCH_ASSOC);
+			$data['stack'] = explode(',',$data['stack']);
 			
 			/* close connection */
-			$stmt->closeCursor();
+			// $stmt->closeCursor();
 			$conn = null;
 
 			return Pessoa::fromArray($data);

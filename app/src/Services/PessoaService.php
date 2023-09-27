@@ -16,7 +16,7 @@
             $uuid = Uuid::uuid4();
 
             $pessoa = Pessoa::fromArray($data);
-            $pessoa->setUuid($uuid->toString());
+            $pessoa->setId($uuid->toString());
             
             $pessoa = $repository->save($pessoa);
 
@@ -32,7 +32,7 @@
             
         }
 
-        public static function findByUuid($uuid) {
+        public static function findById($uuid) {
             
             $repository = new PessoaRepository;
 
@@ -40,7 +40,7 @@
             // $pessoa = $repository->findByUuid($uuid);
             // SQLTransaction::close();
 
-            $pessoa = $repository->findByUuid($uuid);            
+            $pessoa = $repository->findById($uuid);            
 
             return $pessoa;
         }

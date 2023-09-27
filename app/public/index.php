@@ -62,11 +62,11 @@ $server->on('request', function (Request $req, Response $res) {
     // 2. Configure Slim App
     //----------------------------------------------------
     // Slim container 
-    $container = $app->getContainer();
+    // $container = $app->getContainer();
     
-    $container['ApiController'] = function($container) {
-        return new \App\Controllers\ApiController($container);
-    };
+    // $container['ApiController'] = function($container) {
+    //     return new \App\Controllers\ApiController($container);
+    // };
 
     //---------------------------------------------------------------------------------------
     // 3. Routes
@@ -101,6 +101,12 @@ $server->on('request', function (Request $req, Response $res) {
         //
         // Check cache
         //
+        // $nomes = $cache->get('nomes') ?? '[]';
+        // $nomes = json_decode($nomes);
+        // if( in_array($data['nome'],$nomes) || in_array($data['apelido'],$nomes) ) {
+        //     return $response->withJson(['422 Unprocessable Entity/Content'], 422);
+        // }
+
         $nome = $cache->get($data['nome']);
         $apelido = $cache->get($data['apelido']);        
         if ($nome !== null || $apelido !== null ) {
@@ -110,18 +116,33 @@ $server->on('request', function (Request $req, Response $res) {
         try {
             
             $pessoa = PessoaService::save($data);
-            $uuid = $pessoa->getUuid();
+            $id = $pessoa->getId();
 
-            $cache->set($pessoa->getNome(), true);      // Add to cache
+            #
+            # Add to cache
+            #
+            // $nomes = $cache->get('nomes') ?? '[]';
+            // $nomes = json_decode($nomes);
+            // $nomes[] = $pessoa->getNome();
+            // $nomes[] = $pessoa->getApelido();
+            // $nomes = json_encode($nomes);
+            // $cache->set('nomes', $nomes);      
+
+            // Old cache...
+            $cache->set($pessoa->getNome(), true);   // Add to cache
             $cache->set($pessoa->getApelido(), true);   // Add to cache
+            
+            $cache->set($id, $pessoa->toJson());
+
 
         } catch (InvalidSyntaxException $e) {
             return $response->withJson(['400 Bad Request'], 400);
         } catch (Exception $e) {
+            var_dump($e->getMessage());
             return $response->withJson(['422 Unprocessable Entity/Content'], 422);
         }
 
-        return $response->withAddedHeader('Location',"/pessoas/$uuid")->withJson(['201 created'], 201);
+        return $response->withAddedHeader('Location',"/pessoas/$id")->withJson(['201 created'], 201);
 
     });
 
@@ -130,17 +151,34 @@ $server->on('request', function (Request $req, Response $res) {
         // grab uuid
         $uuid = $args['uuid'];
         
-        $pessoa = PessoaService::findByUuid($uuid);
-        if(!$pessoa) {
-            return $response->withJson("404 not found", 404);    
+        // $pessoa = PessoaService::findById($uuid);
+        // if(!$pessoa) {
+        //     return $response->withJson("404 not found", 404);    
+        // }
+        // return $response->withJson($pessoa->toArray(), 200);
+
+        //
+        // Cache client
+        //
+        $cache = new Predis\Client([
+            'scheme' => 'tcp',
+            'host'   => 'cache',
+            'port'   => 6379,
+        ]);
+
+        $pessoaJson = $cache->get($uuid);
+
+        if($pessoaJson == null) {
+            return $response->withJson("404 not found", 404);
         }
 
-        return $response->withJson($pessoa->toJson(), 200);
+        $pessoa = Pessoa::fromArray(json_decode($pessoaJson,1));
+        return $response->withJson($pessoa->toArray(), 200);        
     });
 
     # GET /pessoas?t=<termo>
     $app->get('/pessoas', function ($request, $response, $args) use($req) {
-        // grab uuid
+        // grab t param
         $params = $req->get ?? [];
         
         if(!isset($params['t'])) {

@@ -30,10 +30,11 @@ RUN pecl install swoole
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
+    pdo_mysql \
     zip \
     mbstring
 
-RUN docker-php-ext-enable pdo pdo_pgsql mbstring zip swoole
+RUN docker-php-ext-enable pdo pdo_pgsql pdo_mysql mbstring zip swoole
 
 # Use the default production configuration
 # RUN mv $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
