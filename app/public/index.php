@@ -138,7 +138,6 @@ $server->on('request', function (Request $req, Response $res) {
         } catch (InvalidSyntaxException $e) {
             return $response->withJson(['400 Bad Request'], 400);
         } catch (Exception $e) {
-            var_dump($e->getMessage());
             return $response->withJson(['422 Unprocessable Entity/Content'], 422);
         }
 

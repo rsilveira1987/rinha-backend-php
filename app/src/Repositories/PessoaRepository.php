@@ -114,19 +114,13 @@
 			// build sql
             $entity = Pessoa::getEntity();
 			
-			$sql = "SELECT count(id) FROM {$entity}";
+			$sql = "SELECT count(id) as count FROM {$entity}";
 
 			// obtem a conexao
 			$conn = SQLConnection::open(CONFIG_DIR . '/db.ini');
-
-			$stmt = $conn->prepare($sql);
-			$ret = $stmt->execute();
+			
+			$stmt = $conn->query($sql, PDO::FETCH_ASSOC);
 			$data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-			/* close connection */
-			$stmt->closeCursor();
-			$conn = null;
-
 			return $data['count'];
 
         }
